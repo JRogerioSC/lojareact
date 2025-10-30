@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pagamento - LojaScript</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            background: linear-gradient(135deg, #007bff, #00c6ff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #fff;
+            padding: 30px 28px;
+            border-radius: 12px;
+            max-width: 460px;
+            width: 95%;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+        }
+
+        h2 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 18px;
+            font-weight: 700;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #444;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .pagamento-tipo {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 14px;
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .pagamento-tipo label {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .botao {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+
+        .botao.green {
+            background: #28a745;
+        }
+
+        .pix-info,
+        .cartao-info {
+            display: none;
+        }
+
+        .ativo {
+            display: block;
+        }
+
+        .qr-img {
+            max-width: 260px;
+            margin: 10px auto;
+            display: block;
+        }
+
+        .info {
+            font-family: monospace;
+            background: #f6f6f6;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px dashed #007bff;
+            word-wrap: break-word;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .half {
+            flex: 1;
+        }
+
+        .voltar {
+            display: block;
+            text-align: center;
+            margin-top: 12px;
+            text-decoration: none;
+            color: #007bff;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2><i class="fa fa-lock"></i> Pagamento Seguro</h2>
+
+        <div class="pagamento-tipo">
+            <label><input type="radio" name="tipo" value="cartao" checked> <i class="fa fa-credit-card"></i>
+                Cartão</label>
+            <label><input type="radio" name="tipo" value="pix"> <i class="fa fa-qrcode"></i> PIX</label>
+        </div>
+
+        <!-- CARTÃO -->
+        <form class="cartao-info ativo">
+            <label for="nome-cartao">Nome no Cartão</label>
+            <input id="nome-cartao" type="text" placeholder="Ex: Maria Souza" required>
+
+            <label for="numero-cartao">Número do Cartão</label>
+            <input id="numero-cartao" type="text" placeholder="0000 0000 0000 0000" maxlength="19" required>
+
+            <div class="row">
+                <div class="half">
+                    <label for="validade">Validade</label>
+                    <input id="validade" type="month" required>
+                </div>
+                <div class="half">
+                    <label for="cvv">CVV</label>
+                    <input id="cvv" type="text" placeholder="123" maxlength="4" required>
+                </div>
+            </div>
+
+            <input id="valor-cartao" type="number" placeholder="Valor (R$)" value="20" step="0.01" required>
+
+            <button type="submit" class="botao">Pagar com Cartão</button>
+        </form>
+
+        <!-- PIX -->
+        <div class="pix-info">
+            <p style="text-align:center">Escaneie o QR ou copie a chave</p>
+            <div class="info" id="pix-chave">Carregando...</div>
+            <img id="pix-qr" class="qr-img" src="" alt="QR Code PIX" style="display:none" />
+            <button id="copiar-btn" class="botao" style="margin-top:8px">Copiar Chave PIX</button>
+            <button id="gerar-pix-btn" class="botao green" style="margin-top:8px">Gerar QR PIX</button>
+        </div>
+
+        <a href="index.html" class="voltar"><i class="fa fa-arrow-left"></i> Voltar à loja</a>
+    </div>
+
+    <script>
+        // ✅ URL completa do backend (ajuste se estiver na Render)
+        const API_BASE = "http://localhost:3000/api/pagamento";
+
+        const radios = document.querySelectorAll('input[name="tipo"]');
+        const cartaoInfo = document.querySelector('.cartao-info');
+        const pixInfo = document.querySelector('.pix-info');
+
+        // Alternância entre cartão e PIX
+        radios.forEach(r => r.addEventListener('change', () => {
+            if (r.checked && r.value === 'cartao') {
+                cartaoInfo.classList.add('ativo');
+                pixInfo.classList.remove('ativo');
+            }
+            if (r.checked && r.value === 'pix') {
+                pixInfo.classList.add('ativo');
+                cartaoInfo.classList.remove('ativo');
+            }
+        }));
+
+        // Máscara do número do cartão
+        const numeroCartao = document.getElementById('numero-cartao');
+        numeroCartao.addEventListener('input', e => {
+            e.target.value = e.target.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
+        });
+
+        // Enviar dados do cartão (simulação sandbox)
+        document.querySelector('.cartao-info').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('nome-cartao').value;
+            const numero = document.getElementById('numero-cartao').value.replace(/\s/g, '');
+            const validade = document.getElementById('validade').value;
+            const cvv = document.getElementById('cvv').value;
+            const valor = document.getElementById('valor-cartao').value;
+
+            try {
+                const resp = await fetch(`${API_BASE}/cartao`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nome, numero, validade, cvv, valor })
+                });
+                const data = await resp.json();
+                if (data.status === "ok") {
+                    alert("✅ Pagamento com cartão processado (sandbox). ID: " + data.id);
+                } else {
+                    alert("❌ Erro no cartão: " + (data.error || JSON.stringify(data)));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("❌ Erro ao comunicar com o servidor.");
+            }
+        });
+
+        // PIX
+        const pixChaveEl = document.getElementById('pix-chave');
+        const pixImgEl = document.getElementById('pix-qr');
+        const copiarBtn = document.getElementById('copiar-btn');
+        const gerarPixBtn = document.getElementById('gerar-pix-btn');
+
+        async function gerarPix() {
+            try {
+                gerarPixBtn.disabled = true;
+                gerarPixBtn.textContent = "Gerando...";
+                const resp = await fetch(`${API_BASE}/pix`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ valor: 20.0, descricao: "Compra LojaScript - Volkswagen Fox" })
+                });
+                const data = await resp.json();
+
+                if (data.status === "ok") {
+                    if (data.qr_code_base64) {
+                        pixImgEl.src = "data:image/png;base64," + data.qr_code_base64;
+                        pixImgEl.style.display = "block";
+                    } else pixImgEl.style.display = "none";
+
+                    pixChaveEl.textContent = data.qr_code || "Chave PIX indisponível";
+                    copiarBtn.disabled = false;
+                    alert("⚡ PIX gerado com sucesso!");
+                } else {
+                    alert("Erro ao gerar PIX: " + (data.error || JSON.stringify(data)));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("❌ Erro ao gerar PIX no servidor.");
+            } finally {
+                gerarPixBtn.disabled = false;
+                gerarPixBtn.textContent = "Gerar QR PIX";
+            }
+        }
+
+        gerarPixBtn.addEventListener('click', gerarPix);
+        copiarBtn.addEventListener('click', () => {
+            const txt = pixChaveEl.textContent;
+            navigator.clipboard.writeText(txt);
+            alert("📋 Chave PIX copiada!");
+        });
+
+        // Inicializa com o cartão visível
+        cartaoInfo.classList.add('ativo');
+        pixInfo.classList.remove('ativo');
+    </script>
+</body>
+
+</html>
