@@ -1,83 +1,98 @@
-import React, { useState } from 'react'
-import './pagamento.css'
+import React, { useState, useRef, useEffect } from "react";
+import "./pagamento.css";
 
 function Pagamento() {
-    const [tipo, setTipo] = useState('cartao')
-    const [nome, setNome] = useState('')
-    const [numero, setNumero] = useState('')
-    const [validade, setValidade] = useState('')
-    const [cvv, setCvv] = useState('')
-    const [valor, setValor] = useState(20)
-    const [pixChave, setPixChave] = useState('Carregando...')
-    const [pixQr, setPixQr] = useState('')
-    const [gerando, setGerando] = useState(false)
+    const [tipo, setTipo] = useState("cartao");
+    const [valor, setValor] = useState(20);
+    const [nome, setNome] = useState("");
+    const [numero, setNumero] = useState("");
+    const [validade, setValidade] = useState("");
+    const [cvv, setCvv] = useState("");
+    const [pixChave, setPixChave] = useState("Carregando...");
+    const [pixImg, setPixImg] = useState("");
 
-    const API_BASE = 'http://localhost:3000/api/pagamento'
+    const gerarPixBtn = useRef(null);
+    const copiarBtn = useRef(null);
 
-    // Máscara número do cartão
-    const handleNumero = (e) => {
-        let v = e.target.value.replace(/\D/g, '')
-        v = v.replace(/(.{4})/g, '$1 ').trim()
-        setNumero(v)
-    }
+    const API_BASE = "http://localhost:3000/api/pagamento";
 
-    // Envio do cartão
-    const enviarCartao = async (e) => {
-        e.preventDefault()
+    // Formatar número do cartão
+    const handleNumeroCartao = (e) => {
+        let val = e.target.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
+        setNumero(val);
+    };
+
+    // Enviar dados do cartão (via token do SDK Mercado Pago)
+    const pagarCartao = async (e) => {
+        e.preventDefault();
         try {
+            // Aqui você precisa gerar o token no frontend usando SDK do Mercado Pago
+            const token = "TOKEN_DO_CARTAO_DO_FRONTEND";
+
+            const payer = {
+                email: "test_user_123456@testuser.com",
+                first_name: nome,
+                identification: { type: "CPF", number: "12345678900" },
+            };
+
             const resp = await fetch(`${API_BASE}/cartao`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome, numero, validade, cvv, valor }),
-            })
-            const data = await resp.json()
-            if (data.status === 'ok') {
-                alert('✅ Pagamento com cartão processado (sandbox). ID: ' + data.id)
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, valor, descricao: "Compra LojaScript - Volkswagen Fox", payer }),
+            });
+
+            const data = await resp.json();
+
+            if (data.status === "approved") {
+                alert("✅ Pagamento com cartão aprovado!");
             } else {
-                alert('❌ Erro no cartão: ' + (data.error || JSON.stringify(data)))
+                alert("❌ Erro no pagamento: " + JSON.stringify(data));
             }
         } catch (err) {
-            console.error(err)
-            alert('❌ Erro ao comunicar com o servidor.')
+            console.error(err);
+            alert("❌ Erro ao processar cartão.");
         }
-    }
+    };
 
-    // Geração PIX
+    // Gerar PIX
     const gerarPix = async () => {
         try {
-            setGerando(true)
+            gerarPixBtn.current.disabled = true;
+            gerarPixBtn.current.textContent = "Gerando...";
             const resp = await fetch(`${API_BASE}/pix`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ valor: 20.0, descricao: 'Compra LojaScript - Volkswagen Fox' }),
-            })
-            const data = await resp.json()
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ valor, descricao: "Compra LojaScript - Volkswagen Fox" }),
+            });
 
-            if (data.status === 'ok') {
-                if (data.qr_code_base64) {
-                    setPixQr('data:image/png;base64,' + data.qr_code_base64)
-                }
-                setPixChave(data.qr_code || 'Chave PIX indisponível')
-                alert('⚡ PIX gerado com sucesso!')
+            const data = await resp.json();
+
+            if (data.status === "approved") {
+                setPixChave(data.point_of_interaction.transaction_data.qr_code);
+                setPixImg(data.point_of_interaction.transaction_data.qr_code_base64 ? "data:image/png;base64," + data.point_of_interaction.transaction_data.qr_code_base64 : "");
+                alert("⚡ PIX gerado com sucesso!");
             } else {
-                alert('Erro ao gerar PIX: ' + (data.error || JSON.stringify(data)))
+                alert("❌ Erro ao gerar PIX: " + JSON.stringify(data));
             }
         } catch (err) {
-            console.error(err)
-            alert('❌ Erro ao gerar PIX no servidor.')
+            console.error(err);
+            alert("❌ Erro ao gerar PIX.");
         } finally {
-            setGerando(false)
+            gerarPixBtn.current.disabled = false;
+            gerarPixBtn.current.textContent = "Gerar QR PIX";
         }
-    }
+    };
 
     const copiarChave = () => {
-        navigator.clipboard.writeText(pixChave)
-        alert('📋 Chave PIX copiada!')
-    }
+        navigator.clipboard.writeText(pixChave);
+        alert("📋 Chave PIX copiada!");
+    };
 
     return (
         <div className="container">
-            <h2>🔒 Pagamento Seguro</h2>
+            <h2>
+                <i className="fa fa-lock"></i> Pagamento Seguro
+            </h2>
 
             <div className="pagamento-tipo">
                 <label>
@@ -85,49 +100,52 @@ function Pagamento() {
                         type="radio"
                         name="tipo"
                         value="cartao"
-                        checked={tipo === 'cartao'}
-                        onChange={() => setTipo('cartao')}
-                    />{' '}
-                    💳 Cartão
+                        checked={tipo === "cartao"}
+                        onChange={() => setTipo("cartao")}
+                    />{" "}
+                    <i className="fa fa-credit-card"></i> Cartão
                 </label>
                 <label>
                     <input
                         type="radio"
                         name="tipo"
                         value="pix"
-                        checked={tipo === 'pix'}
-                        onChange={() => setTipo('pix')}
-                    />{' '}
-                    ⚡ PIX
+                        checked={tipo === "pix"}
+                        onChange={() => setTipo("pix")}
+                    />{" "}
+                    <i className="fa fa-qrcode"></i> PIX
                 </label>
             </div>
 
-            {/* Cartão */}
-            {tipo === 'cartao' && (
-                <form className="cartao-info" onSubmit={enviarCartao}>
-                    <label>Nome no Cartão</label>
+            {/* CARTÃO */}
+            {tipo === "cartao" && (
+                <form className="cartao-info ativo" onSubmit={pagarCartao}>
+                    <label htmlFor="nome-cartao">Nome no Cartão</label>
                     <input
+                        id="nome-cartao"
                         type="text"
+                        placeholder="Ex: Maria Souza"
                         value={nome}
                         onChange={(e) => setNome(e.target.value)}
-                        placeholder="Ex: Maria Souza"
                         required
                     />
 
-                    <label>Número do Cartão</label>
+                    <label htmlFor="numero-cartao">Número do Cartão</label>
                     <input
+                        id="numero-cartao"
                         type="text"
-                        value={numero}
-                        onChange={handleNumero}
                         placeholder="0000 0000 0000 0000"
                         maxLength="19"
+                        value={numero}
+                        onChange={handleNumeroCartao}
                         required
                     />
 
                     <div className="row">
                         <div className="half">
-                            <label>Validade</label>
+                            <label htmlFor="validade">Validade</label>
                             <input
+                                id="validade"
                                 type="month"
                                 value={validade}
                                 onChange={(e) => setValidade(e.target.value)}
@@ -135,24 +153,26 @@ function Pagamento() {
                             />
                         </div>
                         <div className="half">
-                            <label>CVV</label>
+                            <label htmlFor="cvv">CVV</label>
                             <input
+                                id="cvv"
                                 type="text"
-                                value={cvv}
-                                onChange={(e) => setCvv(e.target.value)}
                                 placeholder="123"
                                 maxLength="4"
+                                value={cvv}
+                                onChange={(e) => setCvv(e.target.value)}
                                 required
                             />
                         </div>
                     </div>
 
                     <input
+                        id="valor-cartao"
                         type="number"
-                        value={valor}
-                        onChange={(e) => setValor(e.target.value)}
                         placeholder="Valor (R$)"
+                        value={valor}
                         step="0.01"
+                        onChange={(e) => setValor(e.target.value)}
                         required
                     />
 
@@ -163,25 +183,25 @@ function Pagamento() {
             )}
 
             {/* PIX */}
-            {tipo === 'pix' && (
-                <div className="pix-info">
-                    <p style={{ textAlign: 'center' }}>Escaneie o QR ou copie a chave</p>
+            {tipo === "pix" && (
+                <div className="pix-info ativo">
+                    <p style={{ textAlign: "center" }}>Escaneie o QR ou copie a chave</p>
                     <div className="info">{pixChave}</div>
-                    {pixQr && <img className="qr-img" src={pixQr} alt="QR Code PIX" />}
-                    <button className="botao" onClick={copiarChave}>
+                    {pixImg && <img className="qr-img" src={pixImg} alt="QR Code PIX" />}
+                    <button ref={copiarBtn} onClick={copiarChave} className="botao" style={{ marginTop: 8 }}>
                         Copiar Chave PIX
                     </button>
-                    <button className="botao green" onClick={gerarPix} disabled={gerando}>
-                        {gerando ? 'Gerando...' : 'Gerar QR PIX'}
+                    <button ref={gerarPixBtn} onClick={gerarPix} className="botao green" style={{ marginTop: 8 }}>
+                        Gerar QR PIX
                     </button>
                 </div>
             )}
 
             <a href="/" className="voltar">
-                ← Voltar à loja
+                <i className="fa fa-arrow-left"></i> Voltar à loja
             </a>
         </div>
-    )
+    );
 }
 
-export default Pagamento
+export default Pagamento;

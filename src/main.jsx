@@ -23,3 +23,6 @@ createRoot(document.getElementById('root')).render(
   </BrowserRouter>
 )
 
+import "./index.css";
+
+createRoot(document.getElementById("root")).render(<App />);
