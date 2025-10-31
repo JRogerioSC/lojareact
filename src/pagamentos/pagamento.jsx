@@ -9,7 +9,7 @@ function Pagamento() {
     const [numero, setNumero] = useState("");
     const [validade, setValidade] = useState("");
     const [cvv, setCvv] = useState("");
-    const [pixChave, setPixChave] = useState("Carregando...");
+    const [pixChave, setPixChave] = useState("96991624580");
     const [pixImg, setPixImg] = useState("");
 
     const gerarPixBtn = useRef(null);
@@ -20,7 +20,7 @@ function Pagamento() {
     // Inicializar SDK Mercado Pago
     useEffect(() => {
         if (!mp && window.MercadoPago) {
-            const mercadoPago = new window.MercadoPago("SUA_PUBLIC_KEY", {
+            const mercadoPago = new window.MercadoPago("APP_USR-ea7a0f36-cc3f-41cb-8d84-b1dfbf2c7491", {
                 locale: "pt-BR",
             });
             setMp(mercadoPago);
