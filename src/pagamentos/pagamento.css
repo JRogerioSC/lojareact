@@ -159,16 +159,16 @@ input:focus {
 }
 
 /* ======== RESPONSIVIDADE ======== */
-@media (max-width: 480px) {
+@media (max-width: 320px) {
     .container {
-        padding: 20px;
+        padding: 10px;
     }
 
     h2 {
-        font-size: 20px;
+        font-size: 10px;
     }
 
     .botao {
-        font-size: 15px;
+        font-size: 10px;
     }
 }
