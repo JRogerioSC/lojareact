@@ -157,22 +157,3 @@ input:focus {
 .voltar:hover {
     color: #27ae60;
 }
-
-/* ======== RESPONSIVIDADE ======== */
-@media (max-width: 414px) {
-    body{
-        width: 300px 300px;
-    }
-    
-    .container {
-        padding: 20px;
-    }
-
-    h2 {
-        font-size: 20px;
-    }
-
-    .botao {
-        font-size: 15px;
-    }
-}
