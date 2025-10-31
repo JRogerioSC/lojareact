@@ -1,0 +1,174 @@
+/* ======== PAGAMENTO - ESTILO GERAL ======== */
+body {
+    font-family: "Poppins", sans-serif;
+    background: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    min-height: 100vh;
+}
+
+.container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    max-width: 420px;
+    width: 100%;
+    text-align: left;
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 25px;
+}
+
+h2 i {
+    color: #27ae60;
+    margin-right: 8px;
+}
+
+/* ======== BOTÕES DE ESCOLHA (CARTÃO / PIX) ======== */
+.pagamento-tipo {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.pagamento-tipo label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #555;
+}
+
+.pagamento-tipo input[type="radio"] {
+    accent-color: #27ae60;
+    transform: scale(1.2);
+}
+
+/* ======== FORMULÁRIO CARTÃO ======== */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+label {
+    font-weight: 500;
+    color: #444;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="month"] {
+    padding: 10px 12px;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    font-size: 15px;
+    transition: all 0.2s;
+}
+
+input:focus {
+    border-color: #27ae60;
+    box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.2);
+}
+
+.row {
+    display: flex;
+    gap: 10px;
+}
+
+.half {
+    flex: 1;
+}
+
+/* ======== BOTÕES ======== */
+.botao {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+.botao:hover {
+    background: #219150;
+}
+
+.botao.green {
+    background: #3498db;
+}
+
+.botao.green:hover {
+    background: #2b82c2;
+}
+
+/* ======== PIX ======== */
+.pix-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.pix-info .info {
+    background: #f9f9f9;
+    border: 1px dashed #aaa;
+    padding: 10px;
+    border-radius: 8px;
+    word-break: break-word;
+    text-align: center;
+    color: #333;
+    font-size: 14px;
+}
+
+.qr-img {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    margin-top: 10px;
+}
+
+/* ======== LINK VOLTAR ======== */
+.voltar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #555;
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: 20px;
+    transition: color 0.2s;
+    width: 100%;
+}
+
+.voltar:hover {
+    color: #27ae60;
+}
+
+/* ======== RESPONSIVIDADE ======== */
+@media (max-width: 480px) {
+    .container {
+        padding: 20px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    .botao {
+        font-size: 15px;
+    }
+}

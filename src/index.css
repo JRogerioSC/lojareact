@@ -31,6 +31,11 @@ a:hover {
   color: rgb(207, 153, 37);
 }
 
+.comprar:hover{
+  color: rgb(123, 255, 0);
+  cursor: pointer;
+}
+
 .produtos {
   width: 298px;
   height: 210px;

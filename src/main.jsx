@@ -8,3 +8,18 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
+
+
+import React from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Pagamento from './pagamentos/pagamento.jsx'
+
+createRoot(document.getElementById('root')).render(
+  <BrowserRouter>
+    <Routes>
+      <Route path="/" element={<App />} />
+      <Route path="/pagamento" element={<Pagamento />} />
+    </Routes>
+  </BrowserRouter>
+)
+
