@@ -171,4 +171,42 @@ input:focus {
     .botao {
         font-size: 15px;
     }
+
+    /* Cartão e PIX ficam full width */
+    .row {
+        flex-direction: column;
+    }
+
+    .half {
+        width: 100%;
+    }
+
+    .pix-info {
+        width: 100%;
+    }
+
+    .qr-img {
+        width: 100%;
+        height: auto;
+    }
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+    .row {
+        flex-direction: column;
+    }
+
+    .half {
+        width: 100%;
+    }
+
+    .pix-info {
+        width: 100%;
+    }
+
+    .qr-img {
+        width: 150px;
+        height: 150px;
+    }
 }
