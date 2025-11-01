@@ -20,7 +20,7 @@ function Pagamento() {
     // Inicializar SDK Mercado Pago
     useEffect(() => {
         if (!mp && window.MercadoPago) {
-            const mercadoPago = new window.MercadoPago("APP_USR-ea7a0f36-cc3f-41cb-8d84-b1dfbf2c7491", {
+            const mercadoPago = new window.MercadoPago("TEST-8dfd781b-0e71-4c4f-9055-c2058764e646", {
                 locale: "pt-BR",
             });
             setMp(mercadoPago);
@@ -59,7 +59,7 @@ function Pagamento() {
             const resp = await fetch(`${API_BASE}/cartao`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token, valor, descricao: "Compra LojaScript - Volkswagen Fox", payer }),
+                body: JSON.stringify({ token, valor, descricao: "Compra LojaReact - Volkswagen Fox", payer }),
             });
 
             const data = await resp.json();
@@ -83,7 +83,7 @@ function Pagamento() {
             const resp = await fetch(`${API_BASE}/pix`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ valor, descricao: "Compra LojaScript - Volkswagen Fox" }),
+                body: JSON.stringify({ valor, descricao: "Compra LojaReact - Volkswagen Fox" }),
             });
 
             const data = await resp.json();
