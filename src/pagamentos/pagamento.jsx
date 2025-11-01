@@ -5,58 +5,56 @@ function Pagamento() {
     const [mp, setMp] = useState(null);
     const [tipo, setTipo] = useState("cartao");
     const [valor, setValor] = useState(20);
-    const [nome, setNome] = useState("");
-    const [numero, setNumero] = useState("");
+    const [nome, setNome] = useState("");         // nome completo do usuário (agora único campo para titular)
+    const [numero, setNumero] = useState("");     // input formatado com espaços
+    const [rawNumero, setRawNumero] = useState(""); // número sem espaços para enviar
     const [validade, setValidade] = useState("");
     const [cvv, setCvv] = useState("");
     const [pixChave, setPixChave] = useState("");
     const [pixImg, setPixImg] = useState("");
-
     const gerarPixBtn = useRef(null);
 
-    // 🟢 Substitua pela URL real do seu servidor
     const API_BASE = "https://sevidorlojareact.onrender.com";
 
-    // 🟡 Inicializa o SDK do Mercado Pago assim que disponível
     useEffect(() => {
         if (!mp && window.MercadoPago) {
             const mercadoPago = new window.MercadoPago(
-                "TEST-8dfd781b-0e71-4c4f-9055-c2058764e646", // sua PUBLIC_KEY de teste
+                "TEST-8dfd781b-0e71-4c4f-9055-c2058764e646",
                 { locale: "pt-BR" }
             );
             setMp(mercadoPago);
         }
     }, [mp]);
 
-    // 🧾 Formatar número do cartão (XXXX XXXX XXXX XXXX)
+    // Formata número do cartão com espaços visualmente, mas mantém rawNumero sem espaços
     const handleNumeroCartao = (e) => {
-        let val = e.target.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim();
-        setNumero(val);
+        const digits = e.target.value.replace(/\D/g, "");
+        const formatted = digits.replace(/(.{4})/g, "$1 ").trim();
+        setNumero(formatted);
+        setRawNumero(digits);
     };
 
-    // 💳 Pagamento com cartão
     const pagarCartao = async (e) => {
         e.preventDefault();
         try {
             if (!mp) return alert("❌ Mercado Pago não carregado.");
-
             const [ano, mes] = validade.split("-");
             if (!ano || !mes) return alert("Informe a validade corretamente.");
 
-            // Cria token do cartão
+            // criar token com rawNumero (sem espaços)
             const tokenResponse = await mp.createCardToken({
-                cardNumber: numero.replace(/\s/g, ""),
+                cardNumber: rawNumero,
                 cardExpirationMonth: mes,
                 cardExpirationYear: ano,
                 securityCode: cvv,
-                cardholderName: nome,
+                cardholderName: nome, // usa apenas o campo nome
             });
 
             const token = tokenResponse.id;
 
             const payer = {
                 email: "test_user_123456@testuser.com",
-                first_name: nome,
+                first_name: nome || "Cliente", // usa nome como first_name
                 identification: { type: "CPF", number: "12345678900" },
             };
 
@@ -84,7 +82,6 @@ function Pagamento() {
         }
     };
 
-    // ⚡ Geração de QR Code PIX
     const gerarPix = async () => {
         try {
             gerarPixBtn.current.disabled = true;
@@ -101,8 +98,8 @@ function Pagamento() {
 
             const data = await resp.json();
 
-            if (data.point_of_interaction?.transaction_data?.qr_code) {
-                const tx = data.point_of_interaction.transaction_data;
+            const tx = data.point_of_interaction?.transaction_data;
+            if (tx?.qr_code) {
                 setPixChave(tx.qr_code);
                 setPixImg("data:image/png;base64," + tx.qr_code_base64);
                 alert("⚡ PIX gerado com sucesso!");
@@ -122,7 +119,6 @@ function Pagamento() {
         }
     };
 
-    // 📋 Copiar chave PIX
     const copiarChave = () => {
         if (!pixChave) return alert("Nenhuma chave PIX para copiar.");
         navigator.clipboard.writeText(pixChave);
@@ -247,3 +243,5 @@ function Pagamento() {
 }
 
 export default Pagamento;
+
+
