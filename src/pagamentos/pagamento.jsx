@@ -15,7 +15,7 @@ function Pagamento() {
     const gerarPixBtn = useRef(null);
     const copiarBtn = useRef(null);
 
-    const API_BASE = "http://localhost:3000/api/pagamento";
+    const API_BASE = "https://sevidorlojareact.onrender.com";
 
     // Inicializar SDK Mercado Pago
     useEffect(() => {
